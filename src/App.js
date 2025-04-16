@@ -213,7 +213,7 @@ function App() {
             />
           </div>
           <div className="col-md-4 mb-3">
-            <label className="form-label">Amount</label>
+            <label className="form-label">Total Amount</label>
             <input
               type="number"
               name="amount"
