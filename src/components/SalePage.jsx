@@ -29,13 +29,13 @@ const SalePage = () => {
 
     for (let i = 0; i < count - 1; i++) {
       const part = parseFloat(
-        (Math.random() * ((remaining / (count - i)) * 2)).toFixed(2)
+        (Math.random() * ((remaining / (count - i)) * 2)).toFixed(0)
       );
       parts.push(part);
       remaining -= part;
     }
 
-    parts.push(parseFloat(remaining.toFixed(2))); // Add remaining in last part
+    parts.push(parseFloat(remaining.toFixed(0))); // Add remaining in last part
     return parts;
   };
 
@@ -114,7 +114,7 @@ const SalePage = () => {
       <h4 className="mt-4">Distributed Records</h4>
       {Object.keys(grouped).map((date) => {
         const dailyAmounts = grouped[date];
-        const total = dailyAmounts.reduce((a, b) => a + b, 0).toFixed(2);
+        const total = dailyAmounts.reduce((a, b) => a + b, 0).toFixed(0);
 
         return (
           <div key={date} className="mb-3">
