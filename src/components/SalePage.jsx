@@ -1,147 +1,164 @@
 import React, { useState } from "react";
-import { Table, Button, Form } from "react-bootstrap";
+import { Button, Form, Table } from "react-bootstrap";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const SalePage = () => {
-  const [input, setInput] = useState({ amount: "", from: "", to: "" });
+  const [amount, setAmount] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [distributedData, setDistributedData] = useState([]);
 
-  const handleChange = (e) => {
-    setInput({ ...input, [e.target.name]: e.target.value });
-  };
-
-  const getDatesInRange = (start, end) => {
+  const getDateRange = (start, end) => {
     const dates = [];
-    const current = new Date(start);
+    let current = new Date(start);
     const last = new Date(end);
-
     while (current <= last) {
-      dates.push(new Date(current).toISOString().split("T")[0]);
+      dates.push(new Date(current));
       current.setDate(current.getDate() + 1);
     }
-
     return dates;
   };
 
-  const generateRandomParts = (total, count) => {
-    const parts = [];
-    let remaining = total;
+  const distributeAmount = () => {
+    if (!amount || !fromDate || !toDate) return;
 
-    for (let i = 0; i < count - 1; i++) {
-      const part = parseFloat(
-        (Math.random() * ((remaining / (count - i)) * 2)).toFixed(0)
+    const increased = parseFloat(amount) * 1.12;
+    const finalAmount = increased - increased * 0.04;
+
+    let parts = Array(300).fill(0);
+    let remaining = finalAmount;
+
+    // Random distribution logic
+    for (let i = 0; i < 300; i++) {
+      let value = parseFloat(
+        (Math.random() * ((remaining / (300 - i)) * 2)).toFixed(0)
       );
-      parts.push(part);
-      remaining -= part;
+      parts[i] = value;
+      remaining -= value;
     }
 
-    parts.push(parseFloat(remaining.toFixed(0))); // Add remaining in last part
-    return parts;
-  };
+    // Adjust last value to correct floating-point mismatch
+    parts[299] += parseFloat(remaining.toFixed(0));
 
-  const handleGenerate = () => {
-    const { amount, from, to } = input;
-    if (!amount || !from || !to) return;
+    const dateRange = getDateRange(fromDate, toDate);
+    const result = [];
 
-    const margin = parseFloat(amount) * 1.12;
-    const afterTax = margin * 0.96;
-    const dates = getDatesInRange(from, to);
-
-    if (dates.length * 10 < 300) {
-      alert("Date range should have at least 30 days for 10 parts per day.");
-      return;
-    }
-
-    const parts = generateRandomParts(afterTax, 300);
-    const data = [];
-
-    let index = 0;
-    for (const date of dates) {
-      for (let i = 0; i < 10 && index < 300; i++) {
-        data.push({ date, amount: parts[index++] });
+    let partIndex = 0;
+    for (let date of dateRange) {
+      for (let j = 0; j < 10 && partIndex < 300; j++) {
+        result.push({
+          date: date.toISOString().split("T")[0],
+          amount: parseFloat(parts[partIndex].toFixed(0)),
+        });
+        partIndex++;
       }
     }
 
-    setDistributedData(data);
+    setDistributedData(result);
   };
 
-  // Group data by date for display
-  const grouped = distributedData.reduce((acc, item) => {
-    if (!acc[item.date]) acc[item.date] = [];
-    acc[item.date].push(item.amount);
-    return acc;
-  }, {});
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(distributedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "SalesDistribution");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(blob, "Sales_Distribution.xlsx");
+  };
 
   return (
     <div className="container mt-4">
-      <h3>Distribute Amount by Date Range</h3>
-
-      <Form className="row g-3 mb-3">
+      <h3>Distribute Sale Amount</h3>
+      <Form className="row g-2 mb-4">
         <Form.Group className="col-md-3">
           <Form.Label>Total Amount</Form.Label>
           <Form.Control
             type="number"
-            name="amount"
-            value={input.amount}
-            onChange={handleChange}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="col-md-3">
           <Form.Label>From Date</Form.Label>
           <Form.Control
             type="date"
-            name="from"
-            value={input.from}
-            onChange={handleChange}
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="col-md-3">
           <Form.Label>To Date</Form.Label>
           <Form.Control
             type="date"
-            name="to"
-            value={input.to}
-            onChange={handleChange}
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
           />
         </Form.Group>
         <Form.Group className="col-md-3 d-flex align-items-end">
-          <Button variant="primary" onClick={handleGenerate}>
-            Generate
-          </Button>
+          <Button onClick={distributeAmount}>Distribute</Button>
         </Form.Group>
       </Form>
 
-      <h4 className="mt-4">Distributed Records</h4>
-      {Object.keys(grouped).map((date) => {
-        const dailyAmounts = grouped[date];
-        const total = dailyAmounts.reduce((a, b) => a + b, 0).toFixed(0);
+      {distributedData.length > 0 && (
+        <>
+          <Button variant="success" onClick={exportToExcel} className="mb-3">
+            Export to Excel
+          </Button>
+          <Table bordered striped>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {distributedData.map((entry, index) => {
+                const isLastInGroup = (index + 1) % 10 === 0;
+                const groupStart = index - 9 >= 0 ? index - 9 : 0;
+                let groupTotal = 0;
+                if (isLastInGroup) {
+                  groupTotal = distributedData
+                    .slice(groupStart, index + 1)
+                    .reduce((sum, e) => sum + e.amount, 0);
+                }
 
-        return (
-          <div key={date} className="mb-3">
-            <h5>{date}</h5>
-            <Table striped bordered hover size="sm">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dailyAmounts.map((amt, idx) => (
-                  <tr key={idx}>
-                    <td>{idx + 1}</td>
-                    <td>{amt}</td>
-                  </tr>
-                ))}
-                <tr className="fw-bold">
-                  <td>Total</td>
-                  <td>{total}</td>
-                </tr>
-              </tbody>
-            </Table>
-          </div>
-        );
-      })}
+                return (
+                  <React.Fragment key={index}>
+                    <tr>
+                      <td>{index + 1}</td>
+                      <td>{entry.date}</td>
+                      <td>{entry.amount.toFixed(2)}</td>
+                    </tr>
+
+                    {isLastInGroup && (
+                      <tr className="fw-bold bg-light">
+                        <td colSpan={2}>Total for {entry.date}</td>
+                        <td>{groupTotal.toFixed(2)}</td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+
+              {/* Final grand total */}
+              <tr className="fw-bold bg-success text-white">
+                <td colSpan={2}>Final Grand Total</td>
+                <td>
+                  {distributedData
+                    .reduce((sum, e) => sum + e.amount, 0)
+                    .toFixed(2)}
+                </td>
+              </tr>
+            </tbody>
+          </Table>
+        </>
+      )}
     </div>
   );
 };
