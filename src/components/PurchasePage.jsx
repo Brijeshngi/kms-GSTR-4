@@ -4,6 +4,7 @@ import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Calculator from "./Calculator";
 
 const firmList = [
   { name: "Abhishek Pharma, Gorakhpur", gstin: "09APCPG3667E1ZZ" },
@@ -67,7 +68,7 @@ function PurchasePage() {
       updatedForm.gstin = selectedFirm ? selectedFirm.gstin : "";
     }
 
-    const amt = parseFloat(updatedForm.amount);
+    const amt = parseFloat(updatedForm.originalAmount);
     const taxable = parseFloat(updatedForm.taxableAmount);
     if (!isNaN(amt) && !isNaN(taxable) && amt > taxable) {
       const gstTotal = amt - taxable;
@@ -91,7 +92,9 @@ function PurchasePage() {
     if (!formData.taxableAmount) newErrors.taxableAmount = true;
     if (parseFloat(formData.taxableAmount) > parseFloat(formData.amount)) {
       newErrors.taxableAmount = true;
-      toast.error("❌ Taxable Amount cannot be greater than Total Amount");
+      toast.error("❌ Taxable Amount cannot be greater than Total Amount", {
+        autoClose: 500,
+      });
     }
     if (!formData.cgst) newErrors.cgst = true;
     if (!formData.sgst) newErrors.sgst = true;
@@ -104,10 +107,10 @@ function PurchasePage() {
     const updatedData = [...dataArray];
     if (editIndex !== null) {
       updatedData[editIndex] = formData;
-      toast.success("✅ Entry updated successfully!");
+      toast.success("✅ Entry updated successfully!", { autoClose: 500 });
     } else {
       updatedData.push(formData);
-      toast.success("✅ Entry added successfully!");
+      toast.success("✅ Entry added successfully!", { autoClose: 500 });
     }
 
     setDataArray(updatedData);
@@ -122,6 +125,7 @@ function PurchasePage() {
       gstin: "",
       amount: "",
       taxableAmount: "",
+      originalAmount: "",
       cgst: "",
       sgst: "",
     });
@@ -140,7 +144,7 @@ function PurchasePage() {
 
   const handleDownload = () => {
     if (dataArray.length === 0) {
-      toast.warn("⚠️ No data to export.");
+      toast.warn("⚠️ No data to export.", { autoClose: 500 });
       return;
     }
     const worksheet = XLSX.utils.json_to_sheet(dataArray);
@@ -156,7 +160,7 @@ function PurchasePage() {
       }),
       "invoices.xlsx"
     );
-    toast.success("📥 Excel downloaded successfully!");
+    toast.success("📥 Excel downloaded successfully!", { autoClose: 500 });
   };
 
   const totalAmount = dataArray.reduce(
@@ -211,7 +215,7 @@ function PurchasePage() {
             <input
               type="date"
               name="date"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.date}
               onChange={handleFormChange}
               required
@@ -222,7 +226,7 @@ function PurchasePage() {
             <input
               type="text"
               name="invoiceNumber"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.invoiceNumber}
               onChange={handleFormChange}
               required
@@ -233,7 +237,7 @@ function PurchasePage() {
             <input
               list="firms"
               name="firmName"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.firmName}
               onChange={handleFormChange}
               required
@@ -244,35 +248,46 @@ function PurchasePage() {
               ))}
             </datalist>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-4 mb-4">
             <label className="form-label">GSTIN</label>
             <input
               type="text"
               name="gstin"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               maxLength="15"
               value={formData.gstin}
               onChange={handleFormChange}
               required
             />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-4 mb-4">
             <label className="form-label">Total Amount</label>
             <input
               type="number"
               name="amount"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.amount}
               onChange={handleFormChange}
               required
             />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-4 mb-4">
+            <label className="form-label">Original Amount</label>
+            <input
+              type="number"
+              name="originalAmount"
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              value={formData.originalAmount}
+              onChange={handleFormChange}
+              required
+            />
+          </div>
+          <div className="col-md-4 mb-4">
             <label className="form-label">Taxable Amount</label>
             <input
               type="number"
               name="taxableAmount"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.taxableAmount}
               onChange={handleFormChange}
               required
@@ -283,7 +298,7 @@ function PurchasePage() {
             <input
               type="number"
               name="cgst"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.cgst}
               onChange={handleFormChange}
               required
@@ -294,7 +309,7 @@ function PurchasePage() {
             <input
               type="number"
               name="sgst"
-              className={`form-control ${errors.fieldName && "is-invalid"}`}
+              className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.sgst}
               onChange={handleFormChange}
               required
@@ -315,6 +330,41 @@ function PurchasePage() {
           </button>
         </div>
       </form>
+      <button
+        type="button"
+        className="btn btn-secondary mb-3"
+        data-bs-toggle="modal"
+        data-bs-target="#calculatorModal"
+      >
+        Open Calculator
+      </button>
+      {/* Calculator Modal */}
+      <div
+        className="modal fade"
+        id="calculatorModal"
+        tabIndex="-1"
+        aria-labelledby="calculatorModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="calculatorModalLabel">
+                Calculator
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <Calculator />
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="text-center mb-3">
         <button className="btn btn-primary px-5" onClick={handleDownload}>
           Download Excel

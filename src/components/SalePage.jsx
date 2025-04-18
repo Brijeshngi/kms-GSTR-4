@@ -3,7 +3,7 @@ import { Button, Form, Table } from "react-bootstrap";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import Calculator from "./Calculator";
 const SalePage = () => {
   const [amount, setAmount] = useState("");
   const [fromDate, setFromDate] = useState("");
@@ -103,7 +103,41 @@ const SalePage = () => {
           <Button onClick={distributeAmount}>Distribute</Button>
         </Form.Group>
       </Form>
-
+      <button
+        type="button"
+        className="btn btn-secondary mb-3"
+        data-bs-toggle="modal"
+        data-bs-target="#calculatorModal"
+      >
+        Open Calculator
+      </button>
+      {/* Calculator Modal */}
+      <div
+        className="modal fade"
+        id="calculatorModal"
+        tabIndex="-1"
+        aria-labelledby="calculatorModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="calculatorModalLabel">
+                Calculator
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <Calculator />
+            </div>
+          </div>
+        </div>
+      </div>
       {distributedData.length > 0 && (
         <>
           <Button variant="success" onClick={exportToExcel} className="mb-3">

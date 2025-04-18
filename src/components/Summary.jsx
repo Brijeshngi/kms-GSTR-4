@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Table, Form, Button } from "react-bootstrap";
 import * as XLSX from "xlsx";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Calculator from "./Calculator";
 
 const Summary = () => {
   const [data, setData] = useState([
@@ -151,6 +152,41 @@ const Summary = () => {
         <Button onClick={exportToExcel} variant="success">
           Export to Excel
         </Button>
+      </div>
+      <button
+        type="button"
+        className="btn btn-secondary mb-3"
+        data-bs-toggle="modal"
+        data-bs-target="#calculatorModal"
+      >
+        Open Calculator
+      </button>
+      {/* Calculator Modal */}
+      <div
+        className="modal fade"
+        id="calculatorModal"
+        tabIndex="-1"
+        aria-labelledby="calculatorModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="calculatorModalLabel">
+                Calculator
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <Calculator />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
