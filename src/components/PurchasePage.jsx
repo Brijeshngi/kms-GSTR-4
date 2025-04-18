@@ -8,6 +8,8 @@ import Calculator from "./Calculator";
 
 const firmList = [
   { name: "Abhishek Pharma, Gorakhpur", gstin: "09APCPG3667E1ZZ" },
+  { name: "Modi Pharma, Gorakhpur", gstin: "09BILPM6777N1Z5" },
+  { name: "	Dinesh Medicos, Gorakhpur", gstin: "09ABLPA8832C2ZR" },
   { name: "Afsa Distributors, Gorakhpur", gstin: "09ABXPL5591P1ZC" },
   { name: "Arti Medical Agencies, Gorakhpur", gstin: "09AKUPB1453A1ZG" },
   { name: "Bhagwati Dawa Ghar, GKP", gstin: "09ACDPG5930G1ZR" },
@@ -415,7 +417,7 @@ function PurchasePage() {
                   <td>{entry.invoiceNumber}</td>
                   <td>{entry.firmName}</td>
                   <td>{entry.gstin}</td>
-                  <td>{entry.amount}</td>
+                  <td>{entry.amount.toFixed(2)}</td>
                   <td>{entry.taxableAmount}</td>
                   <td>{entry.cgst}</td>
                   <td>{entry.sgst}</td>
