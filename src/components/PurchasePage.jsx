@@ -70,15 +70,6 @@ function PurchasePage() {
       updatedForm.gstin = selectedFirm ? selectedFirm.gstin : "";
     }
 
-    const amt = parseFloat(updatedForm.originalAmount);
-    const taxable = parseFloat(updatedForm.taxableAmount);
-    if (!isNaN(amt) && !isNaN(taxable) && amt > taxable) {
-      const gstTotal = amt - taxable;
-      const halfGst = (gstTotal / 2).toFixed(2);
-      updatedForm.cgst = halfGst;
-      updatedForm.sgst = halfGst;
-    }
-
     setFormData(updatedForm);
   };
 
@@ -127,7 +118,6 @@ function PurchasePage() {
       gstin: "",
       amount: "",
       taxableAmount: "",
-      originalAmount: "",
       cgst: "",
       sgst: "",
     });
@@ -182,7 +172,6 @@ function PurchasePage() {
     0
   );
 
-  //////////////////////////
   const filteredData = dataArray.filter((item) => {
     const itemDate = new Date(item.date);
     const from = startDate ? new Date(startDate) : null;
@@ -206,7 +195,6 @@ function PurchasePage() {
     (sum, item) => sum + parseFloat(item.sgst || 0),
     0
   );
-
   return (
     <div className="container mt-5">
       <h2 className="mb-4 text-center">Invoice Details Form</h2>
@@ -269,17 +257,6 @@ function PurchasePage() {
               name="amount"
               className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.amount}
-              onChange={handleFormChange}
-              required
-            />
-          </div>
-          <div className="col-md-4 mb-4">
-            <label className="form-label">Original Amount</label>
-            <input
-              type="number"
-              name="originalAmount"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
-              value={formData.originalAmount}
               onChange={handleFormChange}
               required
             />
