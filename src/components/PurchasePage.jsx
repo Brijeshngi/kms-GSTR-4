@@ -417,7 +417,7 @@ function PurchasePage() {
                   <td>{entry.invoiceNumber}</td>
                   <td>{entry.firmName}</td>
                   <td>{entry.gstin}</td>
-                  <td>{entry.amount.toFixed(2)}</td>
+                  <td>{entry.amount}</td>
                   <td>{entry.taxableAmount}</td>
                   <td>{entry.cgst}</td>
                   <td>{entry.sgst}</td>
