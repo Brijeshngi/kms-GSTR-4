@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -45,6 +45,8 @@ const firmList = [
 ];
 
 function PurchasePage() {
+  const dateInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     invoiceNumber: "",
     date: "",
@@ -68,6 +70,9 @@ function PurchasePage() {
     if (name === "firmName") {
       const selectedFirm = firmList.find((firm) => firm.name === value);
       updatedForm.gstin = selectedFirm ? selectedFirm.gstin : "";
+    }
+    if (name === "cgst") {
+      updatedForm.sgst = value;
     }
 
     setFormData(updatedForm);
@@ -122,6 +127,7 @@ function PurchasePage() {
       sgst: "",
     });
     setEditIndex(null);
+    dateInputRef.current?.focus();
   };
 
   const handleEdit = (index) => {
@@ -207,6 +213,7 @@ function PurchasePage() {
               name="date"
               className={`form-control ${errors.date ? "is-invalid" : ""}`}
               value={formData.date}
+              ref={dateInputRef}
               onChange={handleFormChange}
               required
             />

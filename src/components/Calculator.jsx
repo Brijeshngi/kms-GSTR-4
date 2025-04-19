@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { evaluate } from "mathjs"; // ✅ Safe alternative to eval
+import { evaluate } from "mathjs";
 
 function Calculator() {
   const [input, setInput] = useState("");
@@ -8,7 +8,7 @@ function Calculator() {
     (value) => {
       if (value === "=") {
         try {
-          const result = evaluate(input); // ✅ Safe evaluation
+          const result = evaluate(input);
           setInput(result.toString());
         } catch {
           setInput("Error");
@@ -24,19 +24,27 @@ function Calculator() {
 
   const handleKeyPress = useCallback(
     (e) => {
-      const key = e.key;
+      const key = e?.key || "";
       if (/^[0-9+\-*/.]$/.test(key)) {
         setInput((prev) => prev + key);
       } else if (key === "Enter") {
         handleClick("=");
       } else if (key === "Backspace") {
         setInput((prev) => prev.slice(0, -1));
-      } else if (key.toLowerCase() === "c") {
+      } else if (key.toLowerCase?.() === "c") {
+        // ✅ safe check
         handleClick("C");
       }
     },
     [handleClick]
   );
+
+  const handleCopy = () => {
+    if (input !== "") {
+      navigator.clipboard.writeText(input);
+      alert("Copied to clipboard!");
+    }
+  };
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyPress);
@@ -63,16 +71,30 @@ function Calculator() {
     "C",
   ];
 
+  const getButtonClass = (btn) => {
+    if (btn === "=") return "btn-success";
+    if (btn === "C") return "btn-danger";
+    if (["+", "-", "*", "/"].includes(btn)) return "btn-warning";
+    return "btn-primary";
+  };
+
   return (
     <div>
-      <input type="text" className="form-control mb-2" value={input} readOnly />
+      <input
+        type="text"
+        className="form-control mb-3 text-end fs-4 fw-bold"
+        value={input}
+        readOnly
+      />
       <div className="d-grid gap-2">
         {[0, 4, 8, 12].map((start, rowIndex) => (
           <div className="row" key={rowIndex}>
             {buttons.slice(start, start + 4).map((btn) => (
               <div className="col" key={btn}>
                 <button
-                  className="btn btn-outline-primary w-100 mb-2"
+                  className={`btn ${getButtonClass(
+                    btn
+                  )} w-100 mb-2 fw-semibold`}
                   onClick={() => handleClick(btn)}
                 >
                   {btn}
@@ -81,13 +103,22 @@ function Calculator() {
             ))}
           </div>
         ))}
+
         <div className="row">
           <div className="col">
             <button
-              className="btn btn-danger w-100"
-              onClick={() => handleClick("C")}
+              className="btn btn-info w-100 mb-2 fw-semibold"
+              onClick={handleCopy}
             >
-              Clear
+              Copy
+            </button>
+          </div>
+          <div className="col">
+            <button
+              className="btn btn-dark w-100 mb-2 fw-semibold"
+              onClick={() => setInput("")}
+            >
+              Clear All
             </button>
           </div>
         </div>
