@@ -9,6 +9,8 @@ const SalePage = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [distributedData, setDistributedData] = useState([]);
+  const [billStart, setBillStart] = useState("");
+  const [billEnd, setBillEnd] = useState("");
 
   const getDateRange = (start, end) => {
     const dates = [];
@@ -22,15 +24,14 @@ const SalePage = () => {
   };
 
   const distributeAmount = () => {
-    if (!amount || !fromDate || !toDate) return;
+    if (!amount || !fromDate || !toDate || !billStart || !billEnd) return;
 
     const increased = parseFloat(amount) * 1.12;
-    const finalAmount = increased - increased * 0.04;
+    const finalAmount = increased - increased * 0.02;
 
     let parts = Array(300).fill(0);
     let remaining = finalAmount;
 
-    // Random distribution logic
     for (let i = 0; i < 300; i++) {
       let value = parseFloat(
         (Math.random() * ((remaining / (300 - i)) * 2)).toFixed(0)
@@ -39,11 +40,19 @@ const SalePage = () => {
       remaining -= value;
     }
 
-    // Adjust last value to correct floating-point mismatch
     parts[299] += parseFloat(remaining.toFixed(0));
 
     const dateRange = getDateRange(fromDate, toDate);
     const result = [];
+
+    const startBill = parseInt(billStart);
+    const endBill = parseInt(billEnd);
+    const totalBills = endBill - startBill + 1;
+
+    if (totalBills !== 300) {
+      alert("Bill number range must be exactly 300.");
+      return;
+    }
 
     let partIndex = 0;
     for (let date of dateRange) {
@@ -51,6 +60,7 @@ const SalePage = () => {
         result.push({
           date: date.toISOString().split("T")[0],
           amount: parseFloat(parts[partIndex].toFixed(0)),
+          billNo: startBill + partIndex,
         });
         partIndex++;
       }
@@ -99,6 +109,23 @@ const SalePage = () => {
             onChange={(e) => setToDate(e.target.value)}
           />
         </Form.Group>
+        <Form.Group className="col-md-3">
+          <Form.Label>Bill No. Start</Form.Label>
+          <Form.Control
+            type="number"
+            value={billStart}
+            onChange={(e) => setBillStart(e.target.value)}
+          />
+        </Form.Group>
+        <Form.Group className="col-md-3">
+          <Form.Label>Bill No. End</Form.Label>
+          <Form.Control
+            type="number"
+            value={billEnd}
+            onChange={(e) => setBillEnd(e.target.value)}
+          />
+        </Form.Group>
+
         <Form.Group className="col-md-3 d-flex align-items-end">
           <Button onClick={distributeAmount}>Distribute</Button>
         </Form.Group>
@@ -147,6 +174,7 @@ const SalePage = () => {
             <thead>
               <tr>
                 <th>#</th>
+                <th>Bill No</th>
                 <th>Date</th>
                 <th>Amount</th>
               </tr>
@@ -166,23 +194,21 @@ const SalePage = () => {
                   <React.Fragment key={index}>
                     <tr>
                       <td>{index + 1}</td>
+                      <td>{entry.billNo}</td>
                       <td>{entry.date}</td>
                       <td>{entry.amount.toFixed(2)}</td>
                     </tr>
-
                     {isLastInGroup && (
                       <tr className="fw-bold bg-light">
-                        <td colSpan={2}>Total for {entry.date}</td>
+                        <td colSpan={3}>Total for {entry.date}</td>
                         <td>{groupTotal.toFixed(2)}</td>
                       </tr>
                     )}
                   </React.Fragment>
                 );
               })}
-
-              {/* Final grand total */}
               <tr className="fw-bold bg-success text-white">
-                <td colSpan={2}>Final Grand Total</td>
+                <td colSpan={3}>Total for 300 Bills</td>
                 <td>
                   {distributedData
                     .reduce((sum, e) => sum + e.amount, 0)
