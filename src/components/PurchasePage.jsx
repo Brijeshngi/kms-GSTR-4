@@ -1,10 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calculator from "./Calculator";
+import API from "../api";
 
 const firmList = [
   { name: "Abhishek Pharma, Gorakhpur", gstin: "09APCPG3667E1ZZ" },
@@ -62,6 +63,11 @@ function PurchasePage() {
   const [errors, setErrors] = useState({});
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  useEffect(() => {
+    API.get("/purchase")
+      .then((res) => setDataArray(res.data))
+      .catch((err) => console.error("Failed to fetch purchases", err));
+  }, []);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -102,17 +108,22 @@ function PurchasePage() {
       return;
     }
 
-    const updatedData = [...dataArray];
-    if (editIndex !== null) {
-      updatedData[editIndex] = formData;
-      toast.success("✅ Entry updated successfully!", { autoClose: 500 });
+    if (editIndex !== null && dataArray[editIndex]._id) {
+      const id = dataArray[editIndex]._id;
+      API.put(`/purchase/${id}`, formData).then((res) => {
+        const updated = [...dataArray];
+        updated[editIndex] = res.data;
+        setDataArray(updated);
+        toast.success("✅ Entry updated successfully!", { autoClose: 500 });
+        resetForm();
+      });
     } else {
-      updatedData.push(formData);
-      toast.success("✅ Entry added successfully!", { autoClose: 500 });
+      API.post("/purchase", formData).then((res) => {
+        setDataArray([...dataArray, res.data]);
+        toast.success("✅ Entry added successfully!", { autoClose: 500 });
+        resetForm();
+      });
     }
-
-    setDataArray(updatedData);
-    resetForm();
   };
 
   const resetForm = () => {
@@ -136,10 +147,13 @@ function PurchasePage() {
   };
 
   const handleDelete = (index) => {
-    setDataArray(dataArray.filter((_, i) => i !== index));
-    if (editIndex === index) resetForm();
+    const id = dataArray[index]._id;
+    API.delete(`/purchase/${id}`).then(() => {
+      setDataArray(dataArray.filter((_, i) => i !== index));
+      toast.success("✅ Entry deleted.", { autoClose: 500 });
+      if (editIndex === index) resetForm();
+    });
   };
-
   const handleDownload = () => {
     if (dataArray.length === 0) {
       toast.warn("⚠️ No data to export.", { autoClose: 500 });
