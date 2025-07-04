@@ -10,6 +10,7 @@ import API from "../api";
 const firmList = [
   { name: "Abhishek Pharma, Gorakhpur", gstin: "09APCPG3667E1ZZ" },
   { name: "Vikas Pharma, Gorakhpur", gstin: "09AFUPS8731H2ZK" },
+  { name: "Ayansh Pharma, Gorakhpur", gstin: "09JVXPS4346L1Z8" },
   { name: "Modi Pharma, Gorakhpur", gstin: "09BILPM6777N1Z5" },
   { name: "Dinesh Medicos, Gorakhpur", gstin: "09ABLPA8832C2ZR" },
   { name: "Afsa Distributors, Gorakhpur", gstin: "09ABXPL5591P1ZC" },
