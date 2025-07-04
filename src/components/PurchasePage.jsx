@@ -10,7 +10,7 @@ import API from "../api";
 const firmList = [
   { name: "Abhishek Pharma, Gorakhpur", gstin: "09APCPG3667E1ZZ" },
   { name: "Modi Pharma, Gorakhpur", gstin: "09BILPM6777N1Z5" },
-  { name: "	Dinesh Medicos, Gorakhpur", gstin: "09ABLPA8832C2ZR" },
+  { name: "Dinesh Medicos, Gorakhpur", gstin: "09ABLPA8832C2ZR" },
   { name: "Afsa Distributors, Gorakhpur", gstin: "09ABXPL5591P1ZC" },
   { name: "Arti Medical Agencies, Gorakhpur", gstin: "09AKUPB1453A1ZG" },
   { name: "Bhagwati Dawa Ghar, GKP", gstin: "09ACDPG5930G1ZR" },
@@ -19,6 +19,7 @@ const firmList = [
   { name: "Dinesh Drug, Gorakhpur", gstin: "09ABLPA0858N1ZB" },
   { name: "Goswami Medical Agencies, Gorakhpur", gstin: "09AHTPG6844J1ZN" },
   { name: "Gupta Traders, GKP", gstin: "09AITPG4761D1Z1" },
+  { name: "New Moti Medical Agencies, GKP", gstin: "09BOQPG7824F2ZK" },
   {
     name: "Harshita Medical Enterprises, Gorakhpur",
     gstin: "09ADIPT4620N1ZZ",
