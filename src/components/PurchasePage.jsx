@@ -46,6 +46,7 @@ const firmList = [
   },
   { name: "Tripti Pharma, Gorakhpur", gstin: "09AFPPA1580H1ZF" },
   { name: "Tulsyan Pharmaceuticals, Gorakhpur", gstin: "09AAEHV2656K1ZM" },
+  { name: "Tripti Medical Agencies, GKP", gstin: "09ATWPA4239J1Z8" },
 ];
 
 function PurchasePage() {
