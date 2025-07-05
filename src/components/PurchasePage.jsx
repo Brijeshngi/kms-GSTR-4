@@ -474,7 +474,7 @@ function PurchasePage() {
           </table>
         </div>
       )}
-      <ToastContainer />;
+      <ToastContainer />
     </div>
   );
 }
