@@ -115,47 +115,7 @@ function App() {
         onClose={() => setShowModal(false)}
         onFirmAdded={handleFirmAdded}
       />
-      {/* Firm List */}
-      <table className="table table-bordered">
-        <thead>
-          <tr>
-            <th>Firm Name</th>
-            <th>Address</th>
-            <th>GSTIN</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {firms.map((firm) => (
-            <tr key={firm._id}>
-              <td>{firm.firmName}</td>
-              <td>{firm.address}</td>
-              <td>{firm.gstin}</td>
-              <td>
-                <button
-                  className="btn btn-sm btn-primary me-2"
-                  onClick={() => handleUpdate(firm._id)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={() => handleDelete(firm._id)}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-          {firms.length === 0 && (
-            <tr>
-              <td colSpan="4" className="text-center">
-                No firms found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route
