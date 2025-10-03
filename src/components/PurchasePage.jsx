@@ -21,7 +21,8 @@ function PurchasePage() {
     sgst: "",
   });
   const [dataArray, setDataArray] = useState([]);
-  const [firms, setFirms] = useState([]); // 👈 State for firm list from API
+  const [firms, setFirms] = useState([]);
+  const [lastUpdated, setLastUpdated] = useState(Date.now());
   const [editIndex, setEditIndex] = useState(null);
   const [errors, setErrors] = useState({});
   const [startDate, setStartDate] = useState("");
@@ -37,10 +38,10 @@ function PurchasePage() {
   // Fetch firms from backend
   useEffect(() => {
     getFirms()
-      .then((res) => setFirms(res.data.data)) // 👈 firms come as res.data.data
-
+      .then((res) => setFirms(res.data.data))
       .catch((err) => console.error("Failed to fetch firms", err));
-  }, []);
+  }, [lastUpdated]); // 👈 re-run when updated
+
   console.log(firms);
 
   // ================= FORM HANDLERS =================
