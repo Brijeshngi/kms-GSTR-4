@@ -5,49 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calculator from "./Calculator";
-import API from "../api";
-
-const firmList = [
-  { name: "Abhishek Pharma, Gorakhpur", gstin: "09APCPG3667E1ZZ" },
-  { name: "Vikas Pharma, Gorakhpur", gstin: "09AFUPS8731H2ZK" },
-  { name: "Ayansh Pharma, Gorakhpur", gstin: "09JVXPS4346L1Z8" },
-  { name: "Modi Pharma, Gorakhpur", gstin: "09BILPM6777N1Z5" },
-  { name: "Dinesh Medicos, Gorakhpur", gstin: "09ABLPA8832C2ZR" },
-  { name: "Afsa Distributors, Gorakhpur", gstin: "09ABXPL5591P1ZC" },
-  { name: "Arti Medical Agencies, Gorakhpur", gstin: "09AKUPB1453A1ZG" },
-  { name: "Bhagwati Dawa Ghar, GKP", gstin: "09ACDPG5930G1ZR" },
-  { name: "Chokhani Surgicals, Gorakhpur", gstin: "09AFIPC9270R1ZO" },
-  { name: "Dhanuka Medical Agency, Gorakhpur", gstin: "09AHCPD0381Q1Z5" },
-  { name: "Dinesh Drug, Gorakhpur", gstin: "09ABLPA0858N1ZB" },
-  { name: "Goswami Medical Agencies, Gorakhpur", gstin: "09AHTPG6844J1ZN" },
-  { name: "Gupta Traders, GKP", gstin: "09AITPG4761D1Z1" },
-  { name: "New Moti Medical Agencies, GKP", gstin: "09BOQPG7824F2ZK" },
-  {
-    name: "Harshita Medical Enterprises, Gorakhpur",
-    gstin: "09ADIPT4620N1ZZ",
-  },
-  { name: "Indu Pharma, Gorakhpur", gstin: "09ABMPA1385R1Z2" },
-  { name: "Kedia Pharma, Gorakhpur", gstin: "09AKPPK6553R1Z2" },
-  { name: "Moti Medical Agencies, Gorakhpur", gstin: "09AJQPG8178A1ZX" },
-  { name: "Myncil Healthcare, Varanasi", gstin: "09CIDPS7636D1ZZ" },
-  { name: "Naveen Kamani Udyog Pvt Ltd, GKP", gstin: "09AAACN6564M1ZV" },
-  { name: "New Ajay Medical Agencies, Gorakhpur", gstin: "09ABYPB7062Q1ZP" },
-  { name: "New Lari Medical Agencies, GKP", gstin: "09ABMPJ7029F1ZH" },
-  { name: "Pawan Medical Stores, Gorakhpur", gstin: "09ABLPA0185A1Z6" },
-  { name: "Pharma Distributers, Gorakhpur", gstin: "09ABOPA0879L1Z7" },
-  { name: "Prabhunath Medical Stores, Gorakhpur", gstin: "09AHVPG6728M1ZG" },
-  { name: "Prabhunath Pharma, Gorakhpur", gstin: "09AOAPG6522M1ZU" },
-  { name: "Raj Medical Agencies, Gorakhpur", gstin: "09ACVPG0480B1ZO" },
-  { name: "Raj Traders, Gorakhpur", gstin: "09AFIPG9311D1ZN" },
-  { name: "Rama Medical Agencies, Gorakhpur", gstin: "09ABFPA3725Q2ZE" },
-  {
-    name: "Shree Umra Ji Surgicals & Vaccines, GKP",
-    gstin: "09AKUPA8095K1ZC",
-  },
-  { name: "Tripti Pharma, Gorakhpur", gstin: "09AFPPA1580H1ZF" },
-  { name: "Tulsyan Pharmaceuticals, Gorakhpur", gstin: "09AAEHV2656K1ZM" },
-  { name: "Tripti Medical Agencies, GKP", gstin: "09ATWPA4239J1Z8" },
-];
+import API, { getFirms } from "../api"; // 👈 Import your API helper
 
 function PurchasePage() {
   const dateInputRef = useRef(null);
@@ -63,24 +21,38 @@ function PurchasePage() {
     sgst: "",
   });
   const [dataArray, setDataArray] = useState([]);
+  const [firms, setFirms] = useState([]); // 👈 State for firm list from API
   const [editIndex, setEditIndex] = useState(null);
   const [errors, setErrors] = useState({});
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // Fetch purchases
   useEffect(() => {
     API.get("/purchase")
       .then((res) => setDataArray(res.data))
       .catch((err) => console.error("Failed to fetch purchases", err));
   }, []);
-  // ==============
+
+  // Fetch firms from backend
+  useEffect(() => {
+    getFirms()
+      .then((res) => setFirms(res.data.data)) // 👈 firms come as res.data.data
+      .catch((err) => console.error("Failed to fetch firms", err));
+  }, []);
+
+  // ================= FORM HANDLERS =================
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     let updatedForm = { ...formData, [name]: value };
 
+    // Auto-fill GSTIN when firm is selected
     if (name === "firmName") {
-      const selectedFirm = firmList.find((firm) => firm.name === value);
+      const selectedFirm = firms.find((firm) => firm.firmName === value);
       updatedForm.gstin = selectedFirm ? selectedFirm.gstin : "";
     }
+
+    // Auto-fill SGST same as CGST
     if (name === "cgst") {
       updatedForm.sgst = value;
     }
@@ -158,6 +130,7 @@ function PurchasePage() {
       if (editIndex === index) resetForm();
     });
   };
+
   const handleDownload = () => {
     if (dataArray.length === 0) {
       toast.warn("⚠️ No data to export.", { autoClose: 500 });
@@ -179,6 +152,7 @@ function PurchasePage() {
     toast.success("📥 Excel downloaded successfully!", { autoClose: 500 });
   };
 
+  // ================== CALCULATED TOTALS ==================
   const totalAmount = dataArray.reduce(
     (sum, item) => sum + parseFloat(item.amount || 0),
     0
@@ -219,6 +193,8 @@ function PurchasePage() {
     (sum, item) => sum + parseFloat(item.sgst || 0),
     0
   );
+
+  // ================= RENDER =================
   return (
     <div className="container mt-5">
       <h2 className="mb-4 text-center">Invoice Details Form</h2>
@@ -241,7 +217,9 @@ function PurchasePage() {
             <input
               type="text"
               name="invoiceNumber"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${
+                errors.invoiceNumber ? "is-invalid" : ""
+              }`}
               value={formData.invoiceNumber}
               onChange={handleFormChange}
               required
@@ -252,14 +230,14 @@ function PurchasePage() {
             <input
               list="firms"
               name="firmName"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.firmName ? "is-invalid" : ""}`}
               value={formData.firmName}
               onChange={handleFormChange}
               required
             />
             <datalist id="firms">
-              {firmList.map((firm, i) => (
-                <option key={i} value={firm.name} />
+              {firms.map((firm, i) => (
+                <option key={firm._id || i} value={firm.firmName} />
               ))}
             </datalist>
           </div>
@@ -268,7 +246,7 @@ function PurchasePage() {
             <input
               type="text"
               name="gstin"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.gstin ? "is-invalid" : ""}`}
               maxLength="15"
               value={formData.gstin}
               onChange={handleFormChange}
@@ -280,7 +258,7 @@ function PurchasePage() {
             <input
               type="number"
               name="amount"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.amount ? "is-invalid" : ""}`}
               value={formData.amount}
               onChange={handleFormChange}
               required
@@ -291,7 +269,9 @@ function PurchasePage() {
             <input
               type="number"
               name="taxableAmount"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${
+                errors.taxableAmount ? "is-invalid" : ""
+              }`}
               value={formData.taxableAmount}
               onChange={handleFormChange}
               required
@@ -302,7 +282,7 @@ function PurchasePage() {
             <input
               type="number"
               name="cgst"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.cgst ? "is-invalid" : ""}`}
               value={formData.cgst}
               onChange={handleFormChange}
               required
@@ -313,7 +293,7 @@ function PurchasePage() {
             <input
               type="number"
               name="sgst"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.sgst ? "is-invalid" : ""}`}
               value={formData.sgst}
               onChange={handleFormChange}
               required
@@ -334,6 +314,7 @@ function PurchasePage() {
           </button>
         </div>
       </form>
+
       <button
         type="button"
         className="btn btn-secondary mb-3"
@@ -342,6 +323,7 @@ function PurchasePage() {
       >
         Open Calculator
       </button>
+
       {/* Calculator Modal */}
       <div
         className="modal fade"
@@ -369,11 +351,13 @@ function PurchasePage() {
           </div>
         </div>
       </div>
+
       <div className="text-center mb-3">
         <button className="btn btn-primary px-5" onClick={handleDownload}>
           Download Excel
         </button>
       </div>
+
       {dataArray.length > 0 && (
         <div className="mt-4">
           <h5>Saved Entries:</h5>
@@ -474,6 +458,7 @@ function PurchasePage() {
           </table>
         </div>
       )}
+
       <ToastContainer />
     </div>
   );
