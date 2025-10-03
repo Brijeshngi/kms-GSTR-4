@@ -72,7 +72,7 @@ function PurchasePage() {
       .then((res) => setDataArray(res.data))
       .catch((err) => console.error("Failed to fetch purchases", err));
   }, []);
-
+  // ==============
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     let updatedForm = { ...formData, [name]: value };
