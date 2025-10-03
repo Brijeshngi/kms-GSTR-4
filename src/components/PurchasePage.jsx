@@ -38,8 +38,10 @@ function PurchasePage() {
   useEffect(() => {
     getFirms()
       .then((res) => setFirms(res.data.data)) // 👈 firms come as res.data.data
+
       .catch((err) => console.error("Failed to fetch firms", err));
   }, []);
+  console.log(firms);
 
   // ================= FORM HANDLERS =================
   const handleFormChange = (e) => {

@@ -4,7 +4,6 @@ import { addFirm, getFirms, deleteFirm, updateFirm } from "../api";
 
 function FirmModal({ show, onClose }) {
   const [firmName, setFirmName] = useState("");
-  const [address, setAddress] = useState("");
   const [gstin, setGstin] = useState("");
   const [firms, setFirms] = useState([]);
 
@@ -27,10 +26,9 @@ function FirmModal({ show, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await addFirm({ firmName, address, gstin });
+      const { data } = await addFirm({ firmName, gstin });
       setFirms([data.data, ...firms]); // prepend new firm
       setFirmName("");
-      setAddress("");
       setGstin("");
     } catch (err) {
       alert(err.response?.data?.message || "Error adding firm");
@@ -92,16 +90,7 @@ function FirmModal({ show, onClose }) {
                     required
                   />
                 </div>
-                <div className="col-md-4">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Address"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                  />
-                </div>
+
                 <div className="col-md-3">
                   <input
                     type="text"
@@ -124,8 +113,7 @@ function FirmModal({ show, onClose }) {
             <table className="table table-bordered">
               <thead>
                 <tr>
-                  <th>Firm Name</th>
-                  <th>Address</th>
+                  <th>Firm Name and Address</th>
                   <th>GSTIN</th>
                   <th>Actions</th>
                 </tr>
@@ -134,7 +122,6 @@ function FirmModal({ show, onClose }) {
                 {firms.map((firm) => (
                   <tr key={firm._id}>
                     <td>{firm.firmName}</td>
-                    <td>{firm.address}</td>
                     <td>{firm.gstin}</td>
                     <td>
                       <button
