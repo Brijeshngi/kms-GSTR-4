@@ -7,51 +7,10 @@ import "react-toastify/dist/ReactToastify.css";
 import Calculator from "./Calculator";
 import API from "../api";
 
-const firmList = [
-  { name: "Abhishek Pharma, Gorakhpur", gstin: "09APCPG3667E1ZZ" },
-  { name: "Vikas Pharma, Gorakhpur", gstin: "09AFUPS8731H2ZK" },
-  { name: "Ayansh Pharma, Gorakhpur", gstin: "09JVXPS4346L1Z8" },
-  { name: "Modi Pharma, Gorakhpur", gstin: "09BILPM6777N1Z5" },
-  { name: "Dinesh Medicos, Gorakhpur", gstin: "09ABLPA8832C2ZR" },
-  { name: "Afsa Distributors, Gorakhpur", gstin: "09ABXPL5591P1ZC" },
-  { name: "Arti Medical Agencies, Gorakhpur", gstin: "09AKUPB1453A1ZG" },
-  { name: "Bhagwati Dawa Ghar, GKP", gstin: "09ACDPG5930G1ZR" },
-  { name: "Chokhani Surgicals, Gorakhpur", gstin: "09AFIPC9270R1ZO" },
-  { name: "Dhanuka Medical Agency, Gorakhpur", gstin: "09AHCPD0381Q1Z5" },
-  { name: "Dinesh Drug, Gorakhpur", gstin: "09ABLPA0858N1ZB" },
-  { name: "Goswami Medical Agencies, Gorakhpur", gstin: "09AHTPG6844J1ZN" },
-  { name: "Gupta Traders, GKP", gstin: "09AITPG4761D1Z1" },
-  { name: "New Moti Medical Agencies, GKP", gstin: "09BOQPG7824F2ZK" },
-  {
-    name: "Harshita Medical Enterprises, Gorakhpur",
-    gstin: "09ADIPT4620N1ZZ",
-  },
-  { name: "Indu Pharma, Gorakhpur", gstin: "09ABMPA1385R1Z2" },
-  { name: "Kedia Pharma, Gorakhpur", gstin: "09AKPPK6553R1Z2" },
-  { name: "Moti Medical Agencies, Gorakhpur", gstin: "09AJQPG8178A1ZX" },
-  { name: "Myncil Healthcare, Varanasi", gstin: "09CIDPS7636D1ZZ" },
-  { name: "Naveen Kamani Udyog Pvt Ltd, GKP", gstin: "09AAACN6564M1ZV" },
-  { name: "New Ajay Medical Agencies, Gorakhpur", gstin: "09ABYPB7062Q1ZP" },
-  { name: "New Lari Medical Agencies, GKP", gstin: "09ABMPJ7029F1ZH" },
-  { name: "Pawan Medical Stores, Gorakhpur", gstin: "09ABLPA0185A1Z6" },
-  { name: "Pharma Distributers, Gorakhpur", gstin: "09ABOPA0879L1Z7" },
-  { name: "Prabhunath Medical Stores, Gorakhpur", gstin: "09AHVPG6728M1ZG" },
-  { name: "Prabhunath Pharma, Gorakhpur", gstin: "09AOAPG6522M1ZU" },
-  { name: "Raj Medical Agencies, Gorakhpur", gstin: "09ACVPG0480B1ZO" },
-  { name: "Raj Traders, Gorakhpur", gstin: "09AFIPG9311D1ZN" },
-  { name: "Rama Medical Agencies, Gorakhpur", gstin: "09ABFPA3725Q2ZE" },
-  {
-    name: "Shree Umra Ji Surgicals & Vaccines, GKP",
-    gstin: "09AKUPA8095K1ZC",
-  },
-  { name: "Tripti Pharma, Gorakhpur", gstin: "09AFPPA1580H1ZF" },
-  { name: "Tulsyan Pharmaceuticals, Gorakhpur", gstin: "09AAEHV2656K1ZM" },
-  { name: "Tripti Medical Agencies, GKP", gstin: "09ATWPA4239J1Z8" },
-];
-
 function PurchasePage() {
   const dateInputRef = useRef(null);
 
+  // 📌 Purchase form state
   const [formData, setFormData] = useState({
     invoiceNumber: "",
     date: "",
@@ -67,18 +26,33 @@ function PurchasePage() {
   const [errors, setErrors] = useState({});
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+
+  // 📌 Firm management state
+  const [firms, setFirms] = useState([]);
+  const [firmForm, setFirmForm] = useState({ firmName: "", gstin: "" });
+  const [editFirmId, setEditFirmId] = useState(null);
+
+  // 🔹 Load purchases
   useEffect(() => {
     API.get("/purchase")
       .then((res) => setDataArray(res.data))
       .catch((err) => console.error("Failed to fetch purchases", err));
   }, []);
 
+  // 🔹 Load firms
+  useEffect(() => {
+    API.get("/firms")
+      .then((res) => setFirms(res.data.data))
+      .catch((err) => console.error("Failed to fetch firms", err));
+  }, []);
+
+  // 📌 Handle purchase form changes
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     let updatedForm = { ...formData, [name]: value };
 
     if (name === "firmName") {
-      const selectedFirm = firmList.find((firm) => firm.name === value);
+      const selectedFirm = firms.find((firm) => firm.firmName === value);
       updatedForm.gstin = selectedFirm ? selectedFirm.gstin : "";
     }
     if (name === "cgst") {
@@ -88,9 +62,9 @@ function PurchasePage() {
     setFormData(updatedForm);
   };
 
+  // 📌 Add/Update Purchase
   const handleAddOrUpdateEntry = (e) => {
     e.preventDefault();
-
     const newErrors = {};
     if (!formData.invoiceNumber.trim()) newErrors.invoiceNumber = true;
     if (!formData.date) newErrors.date = true;
@@ -158,6 +132,8 @@ function PurchasePage() {
       if (editIndex === index) resetForm();
     });
   };
+
+  // 📌 Download Excel
   const handleDownload = () => {
     if (dataArray.length === 0) {
       toast.warn("⚠️ No data to export.", { autoClose: 500 });
@@ -179,6 +155,7 @@ function PurchasePage() {
     toast.success("📥 Excel downloaded successfully!", { autoClose: 500 });
   };
 
+  // 📊 Totals
   const totalAmount = dataArray.reduce(
     (sum, item) => sum + parseFloat(item.amount || 0),
     0
@@ -219,6 +196,51 @@ function PurchasePage() {
     (sum, item) => sum + parseFloat(item.sgst || 0),
     0
   );
+
+  // 📌 Firm Management Handlers
+  const handleFirmFormChange = (e) => {
+    const { name, value } = e.target;
+    setFirmForm({ ...firmForm, [name]: value });
+  };
+
+  const handleSaveFirm = (e) => {
+    e.preventDefault();
+    if (editFirmId) {
+      API.put(`/firms/${editFirmId}`, firmForm)
+        .then((res) => {
+          setFirms(
+            firms.map((f) => (f._id === editFirmId ? res.data.data : f))
+          );
+          toast.success("✅ Firm updated!", { autoClose: 500 });
+          setFirmForm({ firmName: "", gstin: "" });
+          setEditFirmId(null);
+        })
+        .catch((err) => toast.error(err.response?.data?.message || "Error"));
+    } else {
+      API.post("/firms/add", firmForm)
+        .then((res) => {
+          setFirms([res.data.data, ...firms]);
+          toast.success("✅ Firm added!", { autoClose: 500 });
+          setFirmForm({ firmName: "", gstin: "" });
+        })
+        .catch((err) => toast.error(err.response?.data?.message || "Error"));
+    }
+  };
+
+  const handleDeleteFirm = (id) => {
+    API.delete(`/firms/${id}`)
+      .then(() => {
+        setFirms(firms.filter((f) => f._id !== id));
+        toast.success("✅ Firm deleted", { autoClose: 500 });
+      })
+      .catch(() => toast.error("❌ Error deleting firm"));
+  };
+
+  const handleEditFirm = (firm) => {
+    setFirmForm({ firmName: firm.firmName, gstin: firm.gstin });
+    setEditFirmId(firm._id);
+  };
+
   return (
     <div className="container mt-5">
       <h2 className="mb-4 text-center">Invoice Details Form</h2>
@@ -241,7 +263,9 @@ function PurchasePage() {
             <input
               type="text"
               name="invoiceNumber"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${
+                errors.invoiceNumber ? "is-invalid" : ""
+              }`}
               value={formData.invoiceNumber}
               onChange={handleFormChange}
               required
@@ -252,14 +276,14 @@ function PurchasePage() {
             <input
               list="firms"
               name="firmName"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.firmName ? "is-invalid" : ""}`}
               value={formData.firmName}
               onChange={handleFormChange}
               required
             />
             <datalist id="firms">
-              {firmList.map((firm, i) => (
-                <option key={i} value={firm.name} />
+              {firms.map((firm) => (
+                <option key={firm._id} value={firm.firmName} />
               ))}
             </datalist>
           </div>
@@ -268,7 +292,7 @@ function PurchasePage() {
             <input
               type="text"
               name="gstin"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.gstin ? "is-invalid" : ""}`}
               maxLength="15"
               value={formData.gstin}
               onChange={handleFormChange}
@@ -280,7 +304,7 @@ function PurchasePage() {
             <input
               type="number"
               name="amount"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.amount ? "is-invalid" : ""}`}
               value={formData.amount}
               onChange={handleFormChange}
               required
@@ -291,7 +315,9 @@ function PurchasePage() {
             <input
               type="number"
               name="taxableAmount"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${
+                errors.taxableAmount ? "is-invalid" : ""
+              }`}
               value={formData.taxableAmount}
               onChange={handleFormChange}
               required
@@ -302,7 +328,7 @@ function PurchasePage() {
             <input
               type="number"
               name="cgst"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.cgst ? "is-invalid" : ""}`}
               value={formData.cgst}
               onChange={handleFormChange}
               required
@@ -313,7 +339,7 @@ function PurchasePage() {
             <input
               type="number"
               name="sgst"
-              className={`form-control ${errors.date ? "is-invalid" : ""}`}
+              className={`form-control ${errors.sgst ? "is-invalid" : ""}`}
               value={formData.sgst}
               onChange={handleFormChange}
               required
@@ -334,6 +360,8 @@ function PurchasePage() {
           </button>
         </div>
       </form>
+
+      {/* Calculator + Manage Firms */}
       <button
         type="button"
         className="btn btn-secondary mb-3"
@@ -342,6 +370,15 @@ function PurchasePage() {
       >
         Open Calculator
       </button>
+      <button
+        type="button"
+        className="btn btn-dark mb-3 ms-2"
+        data-bs-toggle="modal"
+        data-bs-target="#firmModal"
+      >
+        Manage Firms
+      </button>
+
       {/* Calculator Modal */}
       <div
         className="modal fade"
@@ -369,11 +406,103 @@ function PurchasePage() {
           </div>
         </div>
       </div>
+
+      {/* Firm Modal */}
+      <div
+        className="modal fade"
+        id="firmModal"
+        tabIndex="-1"
+        aria-labelledby="firmModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title" id="firmModalLabel">
+                Manage Firms
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={handleSaveFirm} className="mb-3">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <input
+                      type="text"
+                      name="firmName"
+                      className="form-control"
+                      placeholder="Firm Name"
+                      value={firmForm.firmName}
+                      onChange={handleFirmFormChange}
+                      required
+                    />
+                  </div>
+                  <div className="col-md-6 mb-3">
+                    <input
+                      type="text"
+                      name="gstin"
+                      className="form-control"
+                      placeholder="GSTIN"
+                      value={firmForm.gstin}
+                      onChange={handleFirmFormChange}
+                      required
+                    />
+                  </div>
+                </div>
+                <button type="submit" className="btn btn-success">
+                  {editFirmId ? "Update Firm" : "Add Firm"}
+                </button>
+              </form>
+
+              <table className="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>Firm Name</th>
+                    <th>GSTIN</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {firms.map((firm) => (
+                    <tr key={firm._id}>
+                      <td>{firm.firmName}</td>
+                      <td>{firm.gstin}</td>
+                      <td>
+                        <button
+                          className="btn btn-warning btn-sm me-2"
+                          onClick={() => handleEditFirm(firm)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDeleteFirm(firm._id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Download Excel */}
       <div className="text-center mb-3">
         <button className="btn btn-primary px-5" onClick={handleDownload}>
           Download Excel
         </button>
       </div>
+
+      {/* Saved Entries */}
       {dataArray.length > 0 && (
         <div className="mt-4">
           <h5>Saved Entries:</h5>
@@ -451,8 +580,6 @@ function PurchasePage() {
                 <td>{totalSgst.toFixed(2)}</td>
                 <td></td>
               </tr>
-            </tfoot>
-            <tfoot>
               <tr>
                 <td colSpan="4">
                   <strong>Total in Filtered Range</strong>
@@ -469,6 +596,7 @@ function PurchasePage() {
                 <td>
                   <strong>{totalSGSTInRange.toFixed(2)}</strong>
                 </td>
+                <td></td>
               </tr>
             </tfoot>
           </table>
