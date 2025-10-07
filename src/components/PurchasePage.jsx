@@ -249,15 +249,68 @@ function PurchasePage() {
           <div className="col-md-4 mb-3">
             <label className="form-label">Date</label>
             <input
-              type="date"
+              type="text"
               name="date"
+              placeholder="dd/mm/yyyy"
+              maxLength="10"
               className={`form-control ${errors.date ? "is-invalid" : ""}`}
-              value={formData.date}
+              value={
+                formData.date && formData.date.includes("-")
+                  ? (() => {
+                      const [year, month, day] = formData.date.split("-");
+                      return `${day}/${month}/${year}`;
+                    })()
+                  : formData.date || ""
+              }
               ref={dateInputRef}
-              onChange={handleFormChange}
+              onChange={(e) => {
+                let input = e.target.value.replace(/\D/g, ""); // remove non-digits
+                let formatted = input;
+
+                // auto-insert slashes
+                if (input.length > 2 && input.length <= 4) {
+                  formatted = `${input.slice(0, 2)}/${input.slice(2)}`;
+                } else if (input.length > 4) {
+                  formatted = `${input.slice(0, 2)}/${input.slice(
+                    2,
+                    4
+                  )}/${input.slice(4, 8)}`;
+                }
+
+                // validate when fully entered
+                if (formatted.length === 10) {
+                  const [day, month, year] = formatted.split("/").map(Number);
+
+                  const isValidDate = (d, m, y) => {
+                    if (m < 1 || m > 12 || d < 1) return false;
+                    const daysInMonth = new Date(y, m, 0).getDate();
+                    return d <= daysInMonth;
+                  };
+
+                  if (!isValidDate(day, month, year)) {
+                    toast.error("❌ Invalid date. Please check day or month.", {
+                      autoClose: 800,
+                    });
+                    setFormData((prev) => ({ ...prev, date: "" }));
+                    return;
+                  }
+
+                  // valid → store as yyyy-mm-dd
+                  setFormData((prev) => ({
+                    ...prev,
+                    date: `${year}-${String(month).padStart(2, "0")}-${String(
+                      day
+                    ).padStart(2, "0")}`,
+                  }));
+                } else {
+                  // still typing → show formatted
+                  setFormData((prev) => ({ ...prev, date: formatted }));
+                }
+              }}
               required
             />
           </div>
+
           <div className="col-md-4 mb-3">
             <label className="form-label">Invoice Number</label>
             <input
