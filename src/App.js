@@ -1,114 +1,79 @@
-import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router";
+import React from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import PurchasePage from "./components/PurchasePage";
 import SalePage from "./components/SalePage";
 import Summary from "./components/Summary";
 import Navbar from "./components/Navbar";
-
-const ACCESS_CODE = process.env.REACT_APP_ACCESS_CODE; // 🔐 from .env
+import AuthPage from "./components/AuthPage";
+import { useAuth } from "./auth/AuthContext";
 
 function App() {
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [codeInput, setCodeInput] = useState("");
-
-  useEffect(() => {
-    const storedAccess = sessionStorage.getItem("access");
-    if (storedAccess === "granted") {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handleSubmit = () => {
-    if (codeInput === ACCESS_CODE) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem("access", "granted");
-    } else {
-      alert("Access Denied: Invalid Code");
-    }
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem("access");
-    setIsAuthenticated(false);
-    setCodeInput("");
-  };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="d-flex flex-column align-items-center justify-content-center vh-100 bg-light">
-        <div className="card p-4 shadow" style={{ width: "300px" }}>
-          <h5 className="text-center mb-3">Enter Access Code</h5>
-          <input
-            type="password"
-            className="form-control mb-2"
-            value={codeInput}
-            onChange={(e) => setCodeInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          />
-          <button className="btn btn-primary w-100" onClick={handleSubmit}>
-            Submit
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const { isLoggedIn } = useAuth();
 
   return (
     <>
-      <Navbar />
-      <div className="d-flex justify-content-end p-3">
-        <button className="btn btn-outline-danger" onClick={handleLogout}>
-          Logout
-        </button>
-      </div>
+      {isLoggedIn && <Navbar />}
+
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route
+            path="/auth"
+            element={isLoggedIn ? <Navigate to="/purchase" replace /> : <AuthPage />}
+          />
+
+          <Route
             path="/"
             element={
-              <PageWrapper>
-                <PurchasePage />
-              </PageWrapper>
+              <PrivateRoute>
+                <PageWrapper>
+                  <PurchasePage />
+                </PageWrapper>
+              </PrivateRoute>
             }
           />
           <Route
             path="/purchase"
             element={
-              <PageWrapper>
-                <PurchasePage />
-              </PageWrapper>
+              <PrivateRoute>
+                <PageWrapper>
+                  <PurchasePage />
+                </PageWrapper>
+              </PrivateRoute>
             }
           />
           <Route
             path="/sale"
             element={
-              <PageWrapper>
-                <SalePage />
-              </PageWrapper>
+              <PrivateRoute>
+                <PageWrapper>
+                  <SalePage />
+                </PageWrapper>
+              </PrivateRoute>
             }
           />
           <Route
             path="/summary"
             element={
-              <PageWrapper>
-                <Summary />
-              </PageWrapper>
+              <PrivateRoute>
+                <PageWrapper>
+                  <Summary />
+                </PageWrapper>
+              </PrivateRoute>
             }
           />
-          <Route
-            path="*"
-            element={
-              <PageWrapper>
-                <h2>Page Not Found</h2>
-              </PageWrapper>
-            }
-          />
+
+          <Route path="*" element={<Navigate to={isLoggedIn ? "/purchase" : "/auth"} replace />} />
         </Routes>
       </AnimatePresence>
     </>
   );
+}
+
+function PrivateRoute({ children }) {
+  const { isLoggedIn } = useAuth();
+  return isLoggedIn ? children : <Navigate to="/auth" replace />;
 }
 
 // Page animation wrapper
